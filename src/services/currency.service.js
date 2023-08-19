@@ -3,12 +3,14 @@ const fetch = require('node-fetch');
 const Boom = require('@hapi/boom')
 const config = require('../config/config');
 const Currency = require('../models/currency.model');
+const Log = require('../models/log.model');
 
 const URL = config.CURRENCY_URL;
 const allowedCurrencies = config.ALLOWED_CURRENCIES;
 
 
 const getCurrencyPair = async (request, h) => {
+  _log('pair');
   const from = request.query.from.toUpperCase();
   const to = request.query.to.toUpperCase();
   if (!allowedCurrencies.includes(from) || !allowedCurrencies.includes(to)) {
@@ -28,6 +30,7 @@ const getCurrencyPair = async (request, h) => {
 };
 
 const getCurrenciesByDate = async (request, h) => {
+  _log('date');
   let { date } = request.params;
   date.setUTCHours(0, 0, 0, 0);
 
@@ -81,6 +84,15 @@ const _getCurrenciesByDate = async (date) => {
   }, {});
 
   return formattedCurrencies;
+}
+
+const _log = async (queryType) => {
+  try {
+    const log = new Log({ queryType });
+    await log.save();
+  } catch(e) {
+    console.log(e.message);
+  }
 }
 
 // dev @todo remove
