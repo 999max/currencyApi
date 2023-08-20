@@ -8,7 +8,6 @@ const Log = require('../models/log.model');
 const URL = config.CURRENCY_URL;
 const allowedCurrencies = config.ALLOWED_CURRENCIES;
 
-
 const getCurrencyPair = async (request, h) => {
   _log('pair');
   const from = request.query.from.toUpperCase();
@@ -31,20 +30,83 @@ const getCurrencyPair = async (request, h) => {
 
 const getCurrenciesByDate = async (request, h) => {
   _log('date');
+  const now = new Date();
   let { date } = request.params;
-  date.setUTCHours(0, 0, 0, 0);
 
-  if (date > Date.now()) {
+  if (date > now) { // date comes with time 00:00
     return Boom.notFound(`Error: wrong date`);
   }
 
   let currencies = {};
   currencies = await _getCurrenciesByDate(date);
   if (Object.keys(currencies).length === 0) {
-    return Boom.notFound(`No data for such date`);
+    // fetch today's latest or return Error due to old date
+    if (date.toDateString() === now.toDateString()) {
+      // adding with custom hours
+      currencies = await addOrUpdateCurrency(now.getHours());
+    } else {
+      return Boom.notFound(`No data for such date`);
+    }
   }
   currencies['Date'] = `${date.toDateString()}`;
   return h.response(currencies);
+};
+
+const addOrUpdateCurrency = async (hours) => {
+  const rates = await _fetchCurrencies();
+  const date = new Date();
+
+  const existingCurrencies = await Currency.find({ date: {
+    $gte: date.setHours(0, 0, 0, 0),
+    $lt: date.setHours(23, 0, 0, 0),
+  }});
+  date.setHours(hours, 0, 0, 0);
+
+  if (existingCurrencies.length > 0) {
+    const updatedCurrencies = await _updateCurrencies(existingCurrencies, rates, date);
+    return updatedCurrencies;
+  } else {
+    const addedCurrencies = await _addCurrency(date, rates);
+    return addedCurrencies;
+  }
+}
+
+const _updateCurrencies = async (currencies, rates, date) => {
+  const updatePromises = [];
+  for (const currency of currencies) {
+    const asset = currency.asset;
+    if (rates.hasOwnProperty(asset)) {
+      currency.rate = parseFloat(rates[asset]);
+      currency.date = date;
+      updatePromises.push(currency.save());
+    }
+  }
+
+  try {
+    const currencies = await Promise.all(updatePromises);
+    return _formatCurrencies(currencies);
+  } catch (e) {
+    return Boom.internal(`Update error: ${e.message}`);
+  }
+};
+
+const _addCurrency = async (date, rates) => {
+  const addPromises = [];
+  for (const asset of Object.keys(rates)) {
+    const currency = new Currency({
+      asset,
+      rate: parseFloat(rates[asset]),
+      date,
+    });
+    addPromises.push(currency.save());
+  }
+
+  try {
+    const currencies = await Promise.all(addPromises);
+    return _formatCurrencies(currencies);
+  } catch (e) {
+    return Boom.internal(`Update error: ${e.message}`);
+  }
 };
 
 const _fetchCurrencies = async () => {
@@ -76,10 +138,16 @@ const _getLatestCurrency = async (from, to) => {
 }
 
 const _getCurrenciesByDate = async (date) => {
-  const currencies = await Currency.find({ date: date });
+  const currencies = await Currency.find({ date: {
+    $gte: date.setHours(0, 0, 0, 0),
+    $lte: date.setHours(23, 59, 59, 999),
+  }});
+  return _formatCurrencies(currencies);
+}
 
+const _formatCurrencies = (currencies) => {
   const formattedCurrencies = currencies.reduce((acc, currency) => {
-    acc[currency.asset] = currency.rate;
+    acc[currency.asset] = parseFloat(currency.rate);
     return acc;
   }, {});
 
@@ -107,33 +175,6 @@ const getCurrencyRates = async (request, h) => {
 
 };
 
-const addCurrency = async (request, h) => {
-  let rates;
-  try {
-    rates = await _fetchCurrencies();
-  } catch (e) {
-    return h.response(`Error: ${e.message}`).code(500);
-  }
-
-  const promises = [];
-  const date = new Date();
-  for (const asset of Object.keys(rates)) {
-    const currency = new Currency({
-      asset,
-      rate: rates[asset],
-      date,
-    });
-    promises.push(currency.save());
-  }
-
-  try {
-    await Promise.all(promises);
-    return h.response('Currency updated').code(200);
-  } catch (e) {
-    return Boom.internal(`Update error: ${e.message}`);
-  }
-}
-
 const deleteCurrencyById = async (request, h) => {
   try {
     const result = await Currency.findByIdAndDelete(request.query.id);
@@ -152,7 +193,7 @@ module.exports = {
   getCurrencyPair,
   getCurrencyRates,
   getCurrenciesByDate,
-  addCurrency,
+  addOrUpdateCurrency,
   deleteCurrencyById,
   getAllCurrencyRates,
 };

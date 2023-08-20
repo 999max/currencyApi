@@ -42,11 +42,11 @@ const currencyRoutes = [
     },
   },
   // dev @todo remove
-  {
-    method: 'POST',
-    path: '/add',
-    handler: currencyService.addCurrency
-  },
+  // {
+  //   method: 'POST',
+  //   path: '/add',
+  //   handler: currencyService.addCurrency
+  // },
   {
     method: 'DELETE',
     path: '/delete',
