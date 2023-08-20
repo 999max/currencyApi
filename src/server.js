@@ -5,6 +5,7 @@ import config from './config/config.js';
 import { validateApiKey } from './middleware/apiAuth.js';
 import { currencyRoutes } from './routes/currency.routes.js';
 import { updateCurrency } from './workers/currencyUpdater.js';
+import { fillDatabase } from './workers/mockData.js';
 
 const DB = config.MONGO_URL;
 const HOST = config.APP_HOST;
@@ -14,6 +15,9 @@ mongoose
   .connect(DB)
   .then(() => {
     console.log('Connected to DB');
+    fillDatabase()
+      .then(() =>  console.log('Database sampling completed'))
+      .catch((e) => console.error('Error sampling database:', e))
   })
   .catch((error) => console.log('DB error:', error));
 
