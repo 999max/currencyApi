@@ -1,14 +1,13 @@
-
-const fetch = require('node-fetch');
-const Boom = require('@hapi/boom')
-const config = require('../config/config');
-const Currency = require('../models/currency.model');
-const Log = require('../models/log.model');
+import fetch from 'node-fetch';
+import Boom from '@hapi/boom';
+import config from '../config/config.js';
+import Currency from '../models/currency.model.js';
+import Log from '../models/log.model.js';
 
 const URL = config.CURRENCY_URL;
 const allowedCurrencies = config.ALLOWED_CURRENCIES;
 
-const getCurrencyPair = async (request, h) => {
+export const getCurrencyPair = async (request, h) => {
   _log('pair');
   const from = request.query.from.toUpperCase();
   const to = request.query.to.toUpperCase();
@@ -28,7 +27,7 @@ const getCurrencyPair = async (request, h) => {
   return resp;
 };
 
-const getCurrenciesByDate = async (request, h) => {
+export const getCurrenciesByDate = async (request, h) => {
   _log('date');
   const now = new Date();
   let { date } = request.params;
@@ -52,7 +51,7 @@ const getCurrenciesByDate = async (request, h) => {
   return h.response(currencies);
 };
 
-const addOrUpdateCurrency = async (hours) => {
+export const addOrUpdateCurrency = async (hours) => {
   const rates = await _fetchCurrencies();
   const date = new Date();
 
@@ -164,18 +163,18 @@ const _log = async (queryType) => {
 }
 
 // dev @todo remove
-const getAllCurrencyRates = async () => {
+export const getAllCurrencyRates = async () => {
   const currencies = await Currency.find().sort({ createdAt: -1 });
   return currencies;
 };
 
-const getCurrencyRates = async (request, h) => {
+export const getCurrencyRates = async (request, h) => {
   const currentCurrency = await _fetchCurrencies();
   return currentCurrency;
 
 };
 
-const deleteCurrencyById = async (request, h) => {
+export const deleteCurrencyById = async (request, h) => {
   try {
     const result = await Currency.findByIdAndDelete(request.query.id);
     if (result) {
@@ -189,7 +188,7 @@ const deleteCurrencyById = async (request, h) => {
   }
 }
 
-module.exports = {
+const currencyService = {
   getCurrencyPair,
   getCurrencyRates,
   getCurrenciesByDate,
@@ -197,3 +196,5 @@ module.exports = {
   deleteCurrencyById,
   getAllCurrencyRates,
 };
+
+export default currencyService;

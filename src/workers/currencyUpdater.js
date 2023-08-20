@@ -1,9 +1,7 @@
-const { addOrUpdateCurrency } = require('../services/currency.service');
+import { addOrUpdateCurrency } from '../services/currency.service.js';
 
-const updateCurrency = async () => {
+export const updateCurrency = async () => {
   console.log('Updated', Date.now())
   const updateHour = 12;
   await addOrUpdateCurrency(updateHour);
 }
-
-module.exports = updateCurrency;

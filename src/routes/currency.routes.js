@@ -1,8 +1,8 @@
-const Joi = require('joi');
-const Boom = require('@hapi/boom');
-const currencyService = require('../services/currency.service');
+import Joi from 'joi';
+import Boom from '@hapi/boom';
+import currencyService from '../services/currency.service.js';
 
-const currencyRoutes = [
+export const currencyRoutes = [
   {
     method: 'GET',
     path: '/pair',
@@ -58,5 +58,3 @@ const currencyRoutes = [
     handler: currencyService.getAllCurrencyRates
   },
 ];
-
-module.exports = currencyRoutes;

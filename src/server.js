@@ -1,10 +1,10 @@
-const Hapi = require('@hapi/hapi');
-const cron = require('node-cron');
-const mongoose = require('mongoose');
-const config = require('./config/config');
-const validateApiKey = require('./middleware/apiAuth');
-const currencyRoutes = require('./routes/currency.routes');
-const updateCurrency = require('./workers/currencyUpdater');
+import Hapi from '@hapi/hapi';
+import cron from 'node-cron';
+import mongoose from 'mongoose';
+import config from './config/config.js';
+import { validateApiKey } from './middleware/apiAuth.js';
+import { currencyRoutes } from './routes/currency.routes.js';
+import { updateCurrency } from './workers/currencyUpdater.js';
 
 const DB = config.MONGO_URL;
 const HOST = config.APP_HOST;
@@ -12,8 +12,10 @@ const PORT = config.APP_PORT;
 
 mongoose
   .connect(DB)
-  .then(() => console.log('Connected to DB'))
-  .catch((error) => console.log(error));
+  .then(() => {
+    console.log('Connected to DB');
+  })
+  .catch((error) => console.log('DB error:', error));
 
 const init = async () => {
   const server = Hapi.server({
@@ -23,6 +25,7 @@ const init = async () => {
 
   server.ext('onPreHandler', validateApiKey);  
   server.route(currencyRoutes);
+  
   await server.start();
   console.log(`Server started on ${HOST}:${PORT} ${new Date()}`);
 

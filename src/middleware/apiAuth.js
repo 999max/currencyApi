@@ -1,14 +1,12 @@
-const Boom = require('@hapi/boom');
-const { APP_API_KEY } = require('../config/config');
+import Boom from '@hapi/boom';
+import config from '../config/config.js';
 
-const validApiKey = APP_API_KEY;
+const validApiKey = config.APP_API_KEY;
 
-const validateApiKey = (request, h) => {
+export const validateApiKey = (request, h) => {
   if (request.query.apikey === validApiKey) {
     return h.continue;
   } else {
     return Boom.unauthorized('Invalid API key');
   };
 }
-
-module.exports = validateApiKey;

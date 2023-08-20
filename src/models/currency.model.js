@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const currencySchema = new mongoose.Schema({
   asset: { type: String, required: true },
@@ -8,4 +8,4 @@ const currencySchema = new mongoose.Schema({
 
 const Currency = mongoose.model('Currency', currencySchema);
 
-module.exports = Currency;
+export default Currency;
