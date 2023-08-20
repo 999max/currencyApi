@@ -58,7 +58,7 @@ const addOrUpdateCurrency = async (hours) => {
 
   const existingCurrencies = await Currency.find({ date: {
     $gte: date.setHours(0, 0, 0, 0),
-    $lt: date.setHours(23, 0, 0, 0),
+    $lt: date.setHours(13, 0, 0, 0),
   }});
   date.setHours(hours, 0, 0, 0);
 
