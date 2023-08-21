@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const currencyApiKey = process.env.CURRENCY_API_KEY;
-if (currencyApiKey) {
-  throw new Error('Need CURRENCY_API_KEY')
+if (!currencyApiKey) {
+  throw new Error('Need CURRENCY_API_KEY');
 }
 
 const config = {
