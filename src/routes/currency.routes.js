@@ -41,20 +41,4 @@ export const currencyRoutes = [
       },
     },
   },
-  // dev @todo remove
-  // {
-  //   method: 'POST',
-  //   path: '/add',
-  //   handler: currencyService.addCurrency
-  // },
-  {
-    method: 'DELETE',
-    path: '/delete',
-    handler: currencyService.deleteCurrencyById
-  },
-  {
-    method: 'GET',
-    path: '/all',
-    handler: currencyService.getAllCurrencyRates
-  },
 ];

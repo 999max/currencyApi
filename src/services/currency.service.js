@@ -162,39 +162,10 @@ const _log = async (queryType) => {
   }
 }
 
-// dev @todo remove
-export const getAllCurrencyRates = async () => {
-  const currencies = await Currency.find().sort({ createdAt: -1 });
-  return currencies;
-};
-
-export const getCurrencyRates = async (request, h) => {
-  const currentCurrency = await _fetchCurrencies();
-  return currentCurrency;
-
-};
-
-export const deleteCurrencyById = async (request, h) => {
-  try {
-    const result = await Currency.findByIdAndDelete(request.query.id);
-    if (result) {
-      return h.response('Currency deleted').code(200);
-    } else {
-      return h.response('Currency not found').code(404);
-    }
-  } catch (error) {
-    console.error('Error deleting currency:', error);
-    return Boom.internal(`Delete error: ${error.message}`);
-  }
-}
-
 const currencyService = {
   getCurrencyPair,
-  getCurrencyRates,
   getCurrenciesByDate,
   addOrUpdateCurrency,
-  deleteCurrencyById,
-  getAllCurrencyRates,
 };
 
 export default currencyService;
